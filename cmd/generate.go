@@ -9,6 +9,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Helper to get the module name from go.mod
+func getModuleName() string {
+	data, err := os.ReadFile("go.mod")
+	if err != nil {
+		return "myproject" // fallback, but should error in real use
+	}
+	lines := strings.Split(string(data), "\n")
+	if len(lines) > 0 && strings.HasPrefix(lines[0], "module ") {
+		return strings.TrimSpace(strings.TrimPrefix(lines[0], "module "))
+	}
+	return "myproject"
+}
+
 var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate code from templates (coming soon)",
@@ -40,6 +53,7 @@ var controllerCmd = &cobra.Command{
 		name := args[0]
 		module := args[1]
 		titleName := strings.Title(name)
+		moduleName := getModuleName()
 		if err := ensureModuleDirs(module); err != nil {
 			fmt.Println(err)
 			return
@@ -53,7 +67,7 @@ var controllerCmd = &cobra.Command{
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"myproject/internal/%s/service"
+	"%s/internal/%s/service"
 )
 
 type %sController struct {
@@ -84,7 +98,7 @@ func (c *%sController) Delete%s(ctx *fiber.Ctx) error {
 	return nil
 }
 `,
-			module, titleName, titleName,
+			moduleName, module, titleName, titleName,
 			titleName, titleName, titleName, titleName,
 			titleName, titleName, titleName, titleName,
 			titleName, titleName, titleName, titleName,
@@ -105,6 +119,7 @@ var serviceCmd = &cobra.Command{
 		name := args[0]
 		module := args[1]
 		titleName := strings.Title(name)
+		moduleName := getModuleName()
 		if err := ensureModuleDirs(module); err != nil {
 			fmt.Println(err)
 			return
@@ -117,7 +132,7 @@ var serviceCmd = &cobra.Command{
 		content := fmt.Sprintf(`package service
 
 import (
-	"myproject/internal/%s/repository"
+	"%s/internal/%s/repository"
 )
 
 type %sService struct {
@@ -148,7 +163,7 @@ func (s *%sService) Delete%s(id string) error {
 	return nil
 }
 `,
-			module, titleName, titleName,
+			moduleName, module, titleName, titleName,
 			titleName, titleName, titleName, titleName,
 			titleName, titleName, titleName, titleName,
 			titleName, titleName, titleName, titleName,
@@ -225,6 +240,7 @@ var moduleCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
 		titleName := strings.Title(name)
+		moduleName := getModuleName()
 		moduleDir := filepath.Join("internal", name)
 		subdirs := []string{"controller", "repository", "route", "service"}
 		for _, sub := range subdirs {
@@ -239,11 +255,11 @@ var moduleCmd = &cobra.Command{
 		moduleGoContent := fmt.Sprintf(`package %s
 
 import (
-	"myproject/app"
-	"myproject/internal/%s/controller"
-	"myproject/internal/%s/repository"
-	"myproject/internal/%s/route"
-	"myproject/internal/%s/service"
+	"%s/app"
+	"%s/internal/%s/controller"
+	"%s/internal/%s/repository"
+	"%s/internal/%s/route"
+	"%s/internal/%s/service"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -270,7 +286,7 @@ func (m *%sModule) MountRoutes(router fiber.Router) {
 }
 `,
 			name,
-			name, name, name, name,
+			moduleName, moduleName, name, moduleName, name, moduleName, name, moduleName, name,
 			titleName, titleName,
 			titleName, titleName, titleName,
 			titleName, titleName, titleName, titleName,
@@ -285,7 +301,7 @@ func (m *%sModule) MountRoutes(router fiber.Router) {
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"myproject/internal/%s/service"
+	"%s/internal/%s/service"
 )
 
 type %sController struct {
@@ -316,7 +332,7 @@ func (c *%sController) Delete%s(ctx *fiber.Ctx) error {
 	return nil
 }
 `,
-			name, titleName, titleName,
+			moduleName, name, titleName, titleName,
 			titleName, titleName, titleName, titleName,
 			titleName, titleName, titleName, titleName,
 			titleName, titleName, titleName, titleName,
@@ -330,7 +346,7 @@ func (c *%sController) Delete%s(ctx *fiber.Ctx) error {
 		serviceContent := fmt.Sprintf(`package service
 
 import (
-	"myproject/internal/%s/repository"
+	"%s/internal/%s/repository"
 )
 
 type %sService struct {
@@ -361,7 +377,7 @@ func (s *%sService) Delete%s(id string) error {
 	return nil
 }
 `,
-			name, titleName, titleName,
+			moduleName, name, titleName, titleName,
 			titleName, titleName, titleName, titleName,
 			titleName, titleName, titleName, titleName,
 			titleName, titleName, titleName, titleName,
@@ -414,13 +430,13 @@ func (r *%sRepository) Delete%s(id string) error {
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"myproject/internal/%s/controller"
+	"%s/internal/%s/controller"
 )
 
 func Register%sRoutes(route fiber.Router, ctrl *controller.%sController) {
 	// TODO: Register routes for %s
 }
-`, name, titleName, titleName, titleName)
+`, moduleName, name, titleName, titleName, titleName)
 		if err := os.WriteFile(routeFile, []byte(routeContent), 0644); err != nil {
 			fmt.Printf("Error writing %s: %v\n", routeFile, err)
 			return
