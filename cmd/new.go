@@ -13,8 +13,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const starterRepo = "https://github.com/Alexigbokwe/Go_Next.git" // TODO: set to your actual starter repo
-const oldModuleName = "goNext"                                   // The module name used in the starter repo
+const starterRepo = "https://github.com/Alexigbokwe/Go_Next.git"
+const oldModuleName = "goNext" // The module name used in the starter repo
 
 var newCmd = &cobra.Command{
 	Use:   "new [project name]",
@@ -61,7 +61,7 @@ var newCmd = &cobra.Command{
 			modulePath = projectName
 		}
 
-		// Update go.mod
+		// Update go.mod in the new project directory
 		goModPath := filepath.Join(projectName, "go.mod")
 		if err := updateGoMod(goModPath, modulePath); err != nil {
 			fmt.Printf("Error updating go.mod: %v\n", err)
@@ -77,6 +77,7 @@ var newCmd = &cobra.Command{
 	},
 }
 
+// updateGoMod updates the module path in go.mod to newModule
 func updateGoMod(goModPath, newModule string) error {
 	input, err := ioutil.ReadFile(goModPath)
 	if err != nil {
