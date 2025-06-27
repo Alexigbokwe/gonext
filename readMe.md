@@ -14,7 +14,7 @@ A CLI tool to scaffold and manage GoNext framework projects.
 Install the CLI globally with:
 
 ```sh
-go install github.com/Alexigbokwe/goNext_CLI@main
+go install github.com/Alexigbokwe/gonext@main
 ```
 
 Make sure `$GOPATH/bin` or `$HOME/go/bin` is in your PATH.
