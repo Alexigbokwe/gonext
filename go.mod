@@ -1,4 +1,4 @@
-module github.com/Alexigbokwe/goNext_CLI
+module github.com/Alexigbokwe/gonext
 
 go 1.22
 
