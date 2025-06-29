@@ -67,3 +67,69 @@ gonext start --watch
   gonext g service <name> <in_module>
   gonext g repository <name> <in_module>
   ```
+
+## Code Generation
+
+### Modules
+
+- `gonext generate module <name>` or `gonext g module <name>`
+  - Scaffolds a new module with controller, service, repository, and route boilerplate.
+
+### Individual Components
+
+- `gonext generate controller <name> <in_module>` or `gonext g controller <name> <in_module>`
+- `gonext generate service <name> <in_module>` or `gonext g service <name> <in_module>`
+- `gonext generate repository <name> <in_module>` or `gonext g repository <name> <in_module>`
+
+### DTOs
+
+- `gonext generate dto <name> <in_module>` or `gonext g dto <name> <in_module>`
+
+  - Generates a DTO struct in `internal/<in_module>/dto/<name>DTO.go` with sample validation tags.
+  - **Example:**
+
+    ```sh
+    gonext generate dto CreateUser account
+    ```
+
+    Output:
+
+    ```go
+    package dto
+
+    type CreateUserDTO struct {
+        Username string `json:"username" validate:"required,min=3,max=20"`
+        FullName string `json:"full_name" validate:"required,min=3,max=50"`
+        Email    string `json:"email" validate:"required,email"`
+        Password string `json:"password" validate:"required,min=8"`
+    }
+    ```
+
+### Middleware
+
+- `gonext generate middleware <name> <in_module>` or `gonext g middleware <name> <in_module>`
+
+  - Generates a sample Fiber middleware in `internal/<in_module>/middleware/<name>Middleware.go`.
+  - **Example:**
+
+    ```sh
+    gonext generate middleware auth account
+    ```
+
+    Output:
+
+    ```go
+    package middleware
+
+    import (
+        "github.com/gofiber/fiber/v2"
+    )
+
+    // AuthMiddleware is a sample Fiber middleware
+    func AuthMiddleware() fiber.Handler {
+        return func(c *fiber.Ctx) error {
+            // TODO: Add middleware logic here
+            return c.Next()
+        }
+    }
+    ```

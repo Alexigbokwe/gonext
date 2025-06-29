@@ -72,7 +72,7 @@ var newCmd = &cobra.Command{
 			fmt.Printf("Error updating import paths: %v\n", err)
 		}
 
-		fmt.Printf("New GoNext project '%s' created from starter template.\n", projectName)
+		fmt.Printf("New GoNext project '%s' created.\n", projectName)
 		fmt.Println("Don't forget to run 'go mod tidy' in your new project!")
 	},
 }

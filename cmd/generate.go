@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // Helper to get the module name from go.mod
@@ -255,6 +257,7 @@ var moduleCmd = &cobra.Command{
 		moduleGoContent := fmt.Sprintf(`package %s
 
 import (
+	"fmt"
 	"%s/app"
 	"%s/internal/%s/controller"
 	"%s/internal/%s/repository"
@@ -265,24 +268,36 @@ import (
 )
 
 type %sModule struct {
-	Controller *controller.%sController
+	%sController *controller.%sController
 }
 
 func New%sModule() *%sModule {
 	return &%sModule{}
 }
 
+// Called when a module is initialized.
+func (m *%sModule) OnModuleInit() error {
+	fmt.Println("%sModule initialized!")
+	return nil
+}
+
+// Called when a module is destroyed.
+func (m *%sModule) OnModuleDestroy() error {
+	fmt.Println("%sModule destroyed!")
+	return nil
+}
+
 func (m *%sModule) Register(container *app.Container) {
-	repo := &repository.%sRepository{}
-	service := &service.%sService{}
-	controller := &controller.%sController{}
-	app.RegisterModuleComponents(container, repo, service, controller)
-	m.Controller = controller
+	%sRepo := &repository.%sRepository{}
+	%sService := &service.%sService{}
+	%sController := &controller.%sController{}
+	app.RegisterModuleComponents(container, %sRepo, %sService, %sController)
+	m.%sController = %sController
 }
 
 func (m *%sModule) MountRoutes(router fiber.Router) {
 	group := router.Group("/%ss")
-	route.Register%sRoutes(group, m.Controller)
+	route.Register%sRoutes(group, m.%sController)
 }
 `,
 			name,
@@ -445,6 +460,93 @@ func Register%sRoutes(route fiber.Router, ctrl *controller.%sController) {
 	},
 }
 
+var dtoCmd = &cobra.Command{
+	Use:   "dto [name] [in_module]",
+	Short: "Generate a DTO struct in a module (creates module if needed)",
+	Args:  cobra.ExactArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+		name := args[0]
+		module := args[1]
+		if err := ensureModuleDirs(module); err != nil {
+			fmt.Println(err)
+			return
+		}
+		dtoDir := filepath.Join("internal", module, "dto")
+		if err := os.MkdirAll(dtoDir, 0755); err != nil {
+			fmt.Printf("Error creating %s: %v\n", dtoDir, err)
+			return
+		}
+		dtoFile := filepath.Join(dtoDir, fmt.Sprintf("%sDTO.go", name))
+		if _, err := os.Stat(dtoFile); err == nil {
+			fmt.Printf("DTO already exists: %s\n", dtoFile)
+			return
+		}
+		c := cases.Title(language.Und)
+		structName := c.String(name) + "DTO"
+		content := fmt.Sprintf(`package dto
+
+type %s struct {
+	Username string `+"`json:\"username\" validate:\"required,min=3,max=20\"`"+`
+	FullName string `+"`json:\"full_name\" validate:\"required,min=3,max=50\"`"+`
+	Email    string `+"`json:\"email\" validate:\"required,email\"`"+`
+	Password string `+"`json:\"password\" validate:\"required,min=8\"`"+`
+}
+`,
+			structName)
+		if err := os.WriteFile(dtoFile, []byte(content), 0644); err != nil {
+			fmt.Printf("Error writing %s: %v\n", dtoFile, err)
+			return
+		}
+		fmt.Printf("DTO '%s' created in internal/%s/dto\n", name, module)
+	},
+}
+
+var middlewareCmd = &cobra.Command{
+	Use:   "middleware [name] [in_module]",
+	Short: "Generate a Fiber middleware in a module (creates module if needed)",
+	Args:  cobra.ExactArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+		name := args[0]
+		module := args[1]
+		c := cases.Title(language.Und)
+		funcName := c.String(name)
+		if err := ensureModuleDirs(module); err != nil {
+			fmt.Println(err)
+			return
+		}
+		middlewareDir := filepath.Join("internal", module, "middleware")
+		if err := os.MkdirAll(middlewareDir, 0755); err != nil {
+			fmt.Printf("Error creating %s: %v\n", middlewareDir, err)
+			return
+		}
+		middlewareFile := filepath.Join(middlewareDir, fmt.Sprintf("%sMiddleware.go", name))
+		if _, err := os.Stat(middlewareFile); err == nil {
+			fmt.Printf("Middleware already exists: %s\n", middlewareFile)
+			return
+		}
+		content := fmt.Sprintf(`package middleware
+
+import (
+	"github.com/gofiber/fiber/v2"
+)
+
+// %sMiddleware is a sample Fiber middleware
+func %sMiddleware() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// TODO: Add middleware logic here
+		return c.Next()
+	}
+}
+`,
+			funcName, funcName)
+		if err := os.WriteFile(middlewareFile, []byte(content), 0644); err != nil {
+			fmt.Printf("Error writing %s: %v\n", middlewareFile, err)
+			return
+		}
+		fmt.Printf("Middleware '%s' created in internal/%s/middleware\n", name, module)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(generateCmd)
 	rootCmd.AddCommand(gCmd)
@@ -456,4 +558,8 @@ func init() {
 	gCmd.AddCommand(serviceCmd)
 	generateCmd.AddCommand(repositoryCmd)
 	gCmd.AddCommand(repositoryCmd)
+	generateCmd.AddCommand(dtoCmd)
+	gCmd.AddCommand(dtoCmd)
+	generateCmd.AddCommand(middlewareCmd)
+	gCmd.AddCommand(middlewareCmd)
 }
