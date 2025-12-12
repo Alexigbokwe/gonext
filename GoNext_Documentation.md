@@ -53,7 +53,7 @@ GoNext uses a **Modular Architecture**. Instead of organizing files by type (con
 ├── app/                  # Core Framework Code
 ├── config/               # Configuration Structs & Logic
 ├── cmd/                  # Application Entry Points
-├── internal/             # Your Application Logic
+├── app/                  # Your Application Logic
 │   └── user/             # User Module
 │       ├── controller/   # HTTP Handlers
 │       ├── service/      # Business Logic
@@ -68,7 +68,7 @@ GoNext uses a **Modular Architecture**. Instead of organizing files by type (con
 A Module is the container for your feature. It registers your components with the DI container.
 
 ```go
-// internal/user/module.go
+// app/user/module.go
 func (m *UserModule) Register(container *app.Container) {
     container.Register(&service.UserService{})
     container.Register(&controller.UserController{})

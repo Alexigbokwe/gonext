@@ -37,7 +37,7 @@ var gCmd = &cobra.Command{
 // Helper to ensure module exists (creates if not)
 func ensureModuleDirs(moduleName string) error {
 	subdirs := []string{"controller", "repository", "route", "service"}
-	moduleDir := filepath.Join("internal", moduleName)
+	moduleDir := filepath.Join("app", moduleName)
 	for _, sub := range subdirs {
 		path := filepath.Join(moduleDir, sub)
 		if err := os.MkdirAll(path, 0755); err != nil {
@@ -60,7 +60,7 @@ var controllerCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		controllerFile := filepath.Join("internal", module, "controller", fmt.Sprintf("%sController.go", name))
+		controllerFile := filepath.Join("app", module, "controller", fmt.Sprintf("%sController.go", name))
 		if _, err := os.Stat(controllerFile); err == nil {
 			fmt.Printf("Controller already exists: %s\n", controllerFile)
 			return
@@ -109,7 +109,7 @@ func (c *%sController) Delete%s(ctx *fiber.Ctx) error {
 			fmt.Printf("Error writing %s: %v\n", controllerFile, err)
 			return
 		}
-		fmt.Printf("Controller '%s' created in internal/%s/controller\n", name, module)
+		fmt.Printf("Controller '%s' created in app/%s/controller\n", name, module)
 	},
 }
 
@@ -126,7 +126,7 @@ var serviceCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		serviceFile := filepath.Join("internal", module, "service", fmt.Sprintf("%sService.go", name))
+		serviceFile := filepath.Join("app", module, "service", fmt.Sprintf("%sService.go", name))
 		if _, err := os.Stat(serviceFile); err == nil {
 			fmt.Printf("Service already exists: %s\n", serviceFile)
 			return
@@ -174,7 +174,7 @@ func (s *%sService) Delete%s(id string) error {
 			fmt.Printf("Error writing %s: %v\n", serviceFile, err)
 			return
 		}
-		fmt.Printf("Service '%s' created in internal/%s/service\n", name, module)
+		fmt.Printf("Service '%s' created in app/%s/service\n", name, module)
 	},
 }
 
@@ -190,7 +190,7 @@ var repositoryCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		repositoryFile := filepath.Join("internal", module, "repository", fmt.Sprintf("%sRepository.go", name))
+		repositoryFile := filepath.Join("app", module, "repository", fmt.Sprintf("%sRepository.go", name))
 		if _, err := os.Stat(repositoryFile); err == nil {
 			fmt.Printf("Repository already exists: %s\n", repositoryFile)
 			return
@@ -231,7 +231,7 @@ func (r *%sRepository) Delete%s(id string) error {
 			fmt.Printf("Error writing %s: %v\n", repositoryFile, err)
 			return
 		}
-		fmt.Printf("Repository '%s' created in internal/%s/repository\n", name, module)
+		fmt.Printf("Repository '%s' created in app/%s/repository\n", name, module)
 	},
 }
 
@@ -243,7 +243,7 @@ var moduleCmd = &cobra.Command{
 		name := args[0]
 		titleName := strings.Title(name)
 		moduleName := getModuleName()
-		moduleDir := filepath.Join("internal", name)
+		moduleDir := filepath.Join("app", name)
 		subdirs := []string{"controller", "repository", "route", "service"}
 		for _, sub := range subdirs {
 			path := filepath.Join(moduleDir, sub)
@@ -259,10 +259,10 @@ var moduleCmd = &cobra.Command{
 import (
 	"fmt"
 	"%s/app"
-	"%s/internal/%s/controller"
-	"%s/internal/%s/repository"
-	"%s/internal/%s/route"
-	"%s/internal/%s/service"
+	"%s/app/%s/controller"
+	"%s/app/%s/repository"
+	"%s/app/%s/route"
+	"%s/app/%s/service"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -303,9 +303,10 @@ func (m *%sModule) MountRoutes(router fiber.Router) {
 			name,
 			moduleName, moduleName, name, moduleName, name, moduleName, name, moduleName, name,
 			titleName, titleName,
-			titleName, titleName, titleName,
 			titleName, titleName, titleName, titleName,
-			titleName, name, titleName)
+			titleName, titleName, titleName, titleName,
+			titleName, name, titleName, name, titleName, name, titleName, name, name, name, titleName, name,
+			titleName, name, titleName, titleName)
 		if err := os.WriteFile(moduleGo, []byte(moduleGoContent), 0644); err != nil {
 			fmt.Printf("Error writing %s: %v\n", moduleGo, err)
 			return
@@ -316,7 +317,7 @@ func (m *%sModule) MountRoutes(router fiber.Router) {
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"%s/internal/%s/service"
+	"%s/app/%s/service"
 )
 
 type %sController struct {
@@ -361,7 +362,7 @@ func (c *%sController) Delete%s(ctx *fiber.Ctx) error {
 		serviceContent := fmt.Sprintf(`package service
 
 import (
-	"%s/internal/%s/repository"
+	"%s/app/%s/repository"
 )
 
 type %sService struct {
@@ -445,7 +446,7 @@ func (r *%sRepository) Delete%s(id string) error {
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"%s/internal/%s/controller"
+	"%s/app/%s/controller"
 )
 
 func Register%sRoutes(route fiber.Router, ctrl *controller.%sController) {
@@ -456,7 +457,7 @@ func Register%sRoutes(route fiber.Router, ctrl *controller.%sController) {
 			fmt.Printf("Error writing %s: %v\n", routeFile, err)
 			return
 		}
-		fmt.Printf("Module '%s' created in internal/%s with boilerplate files and CRUD stubs.\n", name, name)
+		fmt.Printf("Module '%s' created in app/%s with boilerplate files and CRUD stubs.\n", name, name)
 	},
 }
 
@@ -471,7 +472,7 @@ var dtoCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		dtoDir := filepath.Join("internal", module, "dto")
+		dtoDir := filepath.Join("app", module, "dto")
 		if err := os.MkdirAll(dtoDir, 0755); err != nil {
 			fmt.Printf("Error creating %s: %v\n", dtoDir, err)
 			return
@@ -497,7 +498,7 @@ type %s struct {
 			fmt.Printf("Error writing %s: %v\n", dtoFile, err)
 			return
 		}
-		fmt.Printf("DTO '%s' created in internal/%s/dto\n", name, module)
+		fmt.Printf("DTO '%s' created in app/%s/dto\n", name, module)
 	},
 }
 
@@ -514,7 +515,7 @@ var middlewareCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		middlewareDir := filepath.Join("internal", module, "middleware")
+		middlewareDir := filepath.Join("app", module, "middleware")
 		if err := os.MkdirAll(middlewareDir, 0755); err != nil {
 			fmt.Printf("Error creating %s: %v\n", middlewareDir, err)
 			return
@@ -543,7 +544,7 @@ func %sMiddleware() fiber.Handler {
 			fmt.Printf("Error writing %s: %v\n", middlewareFile, err)
 			return
 		}
-		fmt.Printf("Middleware '%s' created in internal/%s/middleware\n", name, module)
+		fmt.Printf("Middleware '%s' created in app/%s/middleware\n", name, module)
 	},
 }
 

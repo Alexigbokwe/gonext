@@ -26,7 +26,7 @@ var docCmd = &cobra.Command{
 		// Read the embedded documentation
 		content, err := docFS.ReadFile(docPath)
 		if err != nil {
-			fmt.Printf("Error checking internal documentation: %v\n", err)
+			fmt.Printf("Error reading embedded documentation: %v\n", err)
 			return
 		}
 

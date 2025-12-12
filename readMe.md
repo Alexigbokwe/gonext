@@ -85,7 +85,7 @@ gonext start --watch
 
 - `gonext generate dto <name> <in_module>` or `gonext g dto <name> <in_module>`
 
-  - Generates a DTO struct in `internal/<in_module>/dto/<name>DTO.go` with sample validation tags.
+  - Generates a DTO struct in `app/<in_module>/dto/<name>DTO.go` with sample validation tags.
   - **Example:**
 
     ```sh
@@ -107,9 +107,8 @@ gonext start --watch
 
 ### Middleware
 
-- `gonext generate middleware <name> <in_module>` or `gonext g middleware <name> <in_module>`
-
-  - Generates a sample Fiber middleware in `internal/<in_module>/middleware/<name>Middleware.go`.
+- `gonext g middleware <name> <module>`
+  - Generates a sample Fiber middleware in `app/<in_module>/middleware/<name>Middleware.go`.
   - **Example:**
 
     ```sh
